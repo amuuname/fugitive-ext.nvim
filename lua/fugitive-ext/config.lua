@@ -2,26 +2,27 @@
 
 ---@class FugitiveExtConfig
 ---@field fugitive FugitiveConfig
----@field help FugitiveExtHelpConfig
+---@field hint FugitiveExtHintConfig
 ---@field _debug boolean
 local Config = {}
 
 ---@class FugitiveConfig
 ---@field line_number boolean
 ---@field relative_number boolean
----@field keymaps { [string]: FugitiveExtAction }
+---@field hint_header string[][] -- list of header and keymap (i.e. { "Help:", "g?" }, { "Hint:", "?" })
+---@field hint_header_delimiter string -- Delimiter between hint header and keymap
 
----@class FugitiveExtHelpConfig
----@field visibility boolean -- Default visibility of help window when opening fugitive
----@field header boolean -- Display help section header
----@field separator boolean -- Display separator between fugitive and help window
----@field fugitive_min_height number -- Minimum height of fugitive to show help window
----@field sections HelpTable -- Entries to display in the help window
+---@class FugitiveExtHintConfig
+---@field visibility boolean -- Default visibility of hint when opening fugitive
+---@field header boolean -- Display hint section header
+---@field separator boolean -- Display separator between fugitive and hint
+---@field fugitive_min_height number -- Minimum height of fugitive to show hint
+---@field sections HintTable -- Entries to display in the hint
 ---@field padding Padding -- Padding settings
 
----@alias HelpTable HelpSection[] List of help sections
----@alias HelpSection { title: string, entries: HelpItem[] } Section with title and entries
----@alias HelpItem string[] Keymap, description tuple
+---@alias HintTable HintSection[] List of hint sections
+---@alias HintSection { title: string, entries: HintItem[] } Section with title and entries
+---@alias HintItem string[] Keymap, description tuple
 
 ---@class Padding
 ---@field header boolean -- Empty line after header
@@ -32,18 +33,18 @@ local Config = {}
 
 ---@class FugitiveExtPartialConfig
 ---@field fugitive? FugitiveConfig
----@field help? FugitiveExtHelpConfig
+---@field hint? FugitiveExtHintConfig
 ---@field _debug? boolean
 
----@class FugitiveExtPartialHelpConfig
+---@class FugitiveExtPartialHintConfig
 ---@field visibility? boolean
 ---@field header? boolean
 ---@field separator? boolean
 ---@field fugitive_min_height? number
----@field sections? HelpTable
+---@field sections? HintTable
 ---@field padding? Padding
 
----@return HelpTable: Default help sections
+---@return HintTable: Default hint sections
 local function default_sections()
 	local sections = {
 		{
@@ -118,29 +119,30 @@ end
 ---@return FugitiveExtConfig
 function Config.get_default_config()
 	local sections = default_sections()
+    -- stylua: ignore
 	return {
 		fugitive = {
-			line_number = false, -- vim.wo.number
-			relative_number = false, -- vim.wo.relativenumber
-			keymaps = vim.defaulttable(),
-            _debug = false,
+			line_number = false,      -- vim.wo.number
+			relative_number = false,  -- vim.wo.relativenumber
+            hint_header = { { "Help:", "g?" }, { "Hint:", "?" }, },
+            hint_header_delimiter = "  ",
 		},
-        -- config for help window
-		help = {
-			visibility = true, -- Default visibility of help window when opening fugitive
-            header = true, -- Display help section header
-            separator = true, -- Display separator between fugitive and help window
-            fugitive_min_height = 40, -- Minimum height of fugitive to show help window
-            padding = {
-				header = true, -- Empty line after header
-				footer = true, -- Empty line before footer
-				line_leader = 2, -- Number of spaces to pad the beginning of each line
-				key_desc = 2, -- Number of spaces between key and description
-				section = 5, -- Number of spaces between sections
+		hint = {                      -- config for hint
+			visibility = true,        -- Default visibility of hint when opening fugitive
+			header = true,            -- Display hint section header
+			separator = true,         -- Display separator between fugitive and hint
+			fugitive_min_height = 40, -- Minimum height of fugitive to show hint
+			padding = {
+				header = true,        -- Empty line after header
+				footer = true,        -- Empty line before footer
+				line_leader = 2,      -- Number of spaces to pad the beginning of each line
+				key_desc = 2,         -- Number of spaces between key and description
+				section = 5,          -- Number of spaces between sections
 			},
-			-- entries to display in the help window
-			sections = sections,
+			sections = sections,      -- entries to display in the hint
+
 		},
+		_debug = false, -- Debug mode
 	}
 end
 
@@ -153,10 +155,10 @@ function Config.merge_config(partial_config, config)
 	for k, v in pairs(partial_config) do
 		if k == "fugitive" then
 			config.fugitive = vim.tbl_extend("force", config.fugitive, v)
-		elseif k == "help" then
-			config.help = vim.tbl_extend("force", config.help, v)
-        elseif k == "_debug" then
-            config._debug = v
+		elseif k == "hint" then
+			config.hint = vim.tbl_extend("force", config.hint, v)
+		elseif k == "_debug" then
+			config._debug = v
 		else
 			config[k] = vim.tbl_extend("force", config[k] or {}, v)
 		end

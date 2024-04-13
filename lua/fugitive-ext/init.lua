@@ -1,10 +1,10 @@
 local Config = require("fugitive-ext.config")
-local Help = require("fugitive-ext.help")
+local Hint = require("fugitive-ext.hint")
 local autocmd = require("fugitive-ext.autocmd")
 
 ---@class FugitiveExt
 ---@field config FugitiveExtConfig
----@field help FugitiveExtHelp
+---@field hint FugitiveExtHint
 local FugitiveExt = {}
 
 FugitiveExt.__index = FugitiveExt
@@ -15,7 +15,7 @@ function FugitiveExt:new()
 
 	local fugitive_ext = setmetatable({
 		config = config,
-		help = Help:new(config),
+		hint = Hint:new(config),
 	}, self)
 
 	return fugitive_ext
