@@ -194,13 +194,13 @@ function FugitiveExtHelp:toggle()
 			vim.notify("FugitiveExtHelp:toggle - off")
 		end
 		self:close()
-		self.on = true
+		self.on = false
 	else
 		if self.config._debug then
 			vim.notify("FugitiveExtHelp:toggle - on")
 		end
 		self:open({ force = true })
-		self.on = false
+		self.on = true
 	end
 end
 

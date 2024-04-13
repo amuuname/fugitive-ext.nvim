@@ -23,6 +23,7 @@ function Autocmd.setup(fugitive_ext)
 			if fugitive_ext.config._debug then
 				vim.notify("Autocmd.setup - Open - " .. ev.event, 3)
 			end
+            vim.keymap.set("n", "?", function() fugitive_ext.help:toggle() end , { buffer = ev.buf })
 			fugitive_ext.help:refresh()
 		end,
 	})

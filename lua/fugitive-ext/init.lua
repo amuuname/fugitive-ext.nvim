@@ -38,7 +38,7 @@ FugitiveExt.setup = function(self, partial_config)
 
 	if self.config._debug then
 		vim.notify("FugitiveExt Debug Mode Enabled", 3)
-		vim.api.nvim_set_option("cmdheight", 10)
+		vim.api.nvim_set_option("cmdheight", 8)
 	end
 
 	-- Setup autocmd
