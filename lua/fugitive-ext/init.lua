@@ -1,8 +1,10 @@
 local Config = require("fugitive-ext.config")
 local Help = require("fugitive-ext.help")
+local autocmd = require("fugitive-ext.autocmd")
 
 ---@class FugitiveExt
 ---@field config FugitiveExtConfig
+---@field help FugitiveExtHelp
 local FugitiveExt = {}
 
 FugitiveExt.__index = FugitiveExt
@@ -25,7 +27,6 @@ local fugitive_ext = FugitiveExt:new()
 ---@param partial_config? FugitiveExtPartialConfig
 ---@return FugitiveExt
 FugitiveExt.setup = function(self, partial_config)
-	vim.notify("Config.setup")
 	if self ~= fugitive_ext then
 		---@diagnostic disable-next-line: cast-local-type
 		partial_config = self
@@ -34,6 +35,14 @@ FugitiveExt.setup = function(self, partial_config)
 
 	---@diagnostic disable-next-line: param-type-mismatch
 	self.config = Config.merge_config(partial_config, self.config)
+
+	if self.config._debug then
+		vim.notify("FugitiveExt Debug Mode Enabled", 3)
+		vim.api.nvim_set_option("cmdheight", 10)
+	end
+
+	-- Setup autocmd
+	autocmd.setup(self)
 
 	return self
 end

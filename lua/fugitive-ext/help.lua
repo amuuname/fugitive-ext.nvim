@@ -1,36 +1,32 @@
 ---@class FugitiveExtHelp
 ---@field on boolean indicates whether the user turned on/off the help
----@field win_id? number
----@field bufnr? number
----@field content string[] content generated from the `tips` table (from config)
----@field section_lens SectionLengths max len of key and desc for each section
----@field fugitive_bufnr? number
----@field fugitive_width? number
----@field fugitive_height? number
+---@field content string[] content generated from the `config.help.sections`
+---@field section_width SectionWidth max width of key and desc for each section
+---@field win_id? number help floating window id
+---@field bufnr? number help buffer number
+---@field fugitive_bufnr? number fugitive buffer number
+---@field fugitive_width? number fugitive window width
+---@field fugitive_height? number fugitive window height
 ---@field config FugitiveExtConfig
 local FugitiveExtHelp = {}
+
 FugitiveExtHelp.__index = FugitiveExtHelp
 
 ---@alias SectionName string
----@alias SectionLengths { [SectionName]: { key: number, desc: number} }
-
----@class Padding
----@field header boolean
----@field footer boolean
----@field line_leader number
----@field key_desc number
----@field section number
+---@alias SectionWidth { [SectionName]: { key: number, desc: number} }
 
 ---@param config FugitiveExtConfig
 function FugitiveExtHelp:new(config)
+	if config._debug then
+		vim.notify("FugitiveExtHelp:new")
+	end
 	local data = self:setup(config)
 	return setmetatable({
 		on = config.help.visibility,
+		content = data.content,
+		section_width = data.section_width,
 		win_id = nil,
 		bufnr = nil,
-		tips = {},
-		content = data.content,
-		padding = data.lengths,
 		fugitive_bufnr = nil,
 		fugitive_width = nil,
 		fugitive_height = nil,
@@ -39,27 +35,27 @@ function FugitiveExtHelp:new(config)
 end
 
 ---@param config FugitiveExtConfig
----@return { content: string[], lengths: SectionLengths }
+---@return { content: string[], section_width: SectionWidth }
 function FugitiveExtHelp:setup(config)
+	if config._debug then
+		vim.notify("FugitiveExtHelp:setup")
+	end
 	local align_str = require("plenary.strings").align_str
 
 	local sections = config.help.sections
 	local padding = config.help.padding
 
-	---@type SectionLengths
-	local lengths = {}
-
-	---@type integer: Maximum number of help_entry among all sections
-	local max_num_tips = 0
-	for section, tips in pairs(sections) do
-		max_num_tips = math.max(max_num_tips, #tips)
+	---@type SectionWidth
+	local section_width = {}
+	local max_num_entries = 0
+	for _, section in ipairs(sections) do
+		max_num_entries = math.max(max_num_entries, #section.entries)
 		local max_key, max_desc = 0, 0
-		for _, tip in ipairs(tips) do
-			max_key = math.max(max_key, #tip[1])
-			max_desc = math.max(max_desc, #tip[2])
+		for _, entry in ipairs(section.entries) do
+			max_key = math.max(max_key, #entry[1])
+			max_desc = math.max(max_desc, #entry[2])
 		end
-		lengths[section].key = max_key
-		lengths[section].desc = max_desc
+		section_width[section.title] = { key = max_key, desc = max_desc }
 	end
 
 	-- Generate help content
@@ -67,8 +63,12 @@ function FugitiveExtHelp:setup(config)
 	local content = {}
 
 	local header = align_str("", padding.line_leader, false)
-	for section, _ in pairs(sections) do
-		header = header .. align_str(section, lengths[section].key + lengths[section].desc, false)
+	for _, section in ipairs(sections) do
+		local len = section_width[section.title].key
+			+ padding.key_desc
+			+ section_width[section.title].desc
+			+ padding.section
+		header = header .. align_str(section.title, len, false)
 	end
 	table.insert(content, header)
 
@@ -76,10 +76,15 @@ function FugitiveExtHelp:setup(config)
 		table.insert(content, "")
 	end
 
-	for i = 1, max_num_tips do
+	for i = 1, max_num_entries do
 		local line = align_str("", padding.line_leader, false)
-		for section, tips in pairs(sections) do
-			line = line .. align_str(tips[i][1] or "", lengths[section].key + lengths[section].desc, false)
+		for _, section in ipairs(sections) do
+			local entry = section.entries[i] or {}
+			local key = entry[1] or ""
+			local desc = entry[2] or ""
+			line = line
+				.. align_str(key, section_width[section.title].key + padding.key_desc, false)
+				.. align_str(desc, section_width[section.title].desc + padding.section, false)
 		end
 		table.insert(content, line)
 	end
@@ -88,30 +93,43 @@ function FugitiveExtHelp:setup(config)
 		table.insert(content, "")
 	end
 
-	return { content = content, lengths = lengths }
+	return { content = content, section_width = section_width }
 end
 
 --- Open the help window
----@param opts { force: boolean }
+---@param opts { force: boolean } -- { force: whether to open the help window regardless of the fugitive window height }
 function FugitiveExtHelp:open(opts)
 	-- early return if help is already open
 	if self:_is_opened() then
+		if self.config._debug then
+			vim.notify("FugitiveExtHelp:open - early return")
+		end
 		return
 	end
 	-- self:close() -- ???
 
 	self.fugitive_width = vim.api.nvim_win_get_width(0)
 	self.fugitive_height = vim.api.nvim_win_get_height(0)
+	self.fugitive_bufnr = vim.api.nvim_win_get_buf(0)
 
 	-- early return if the fugitive window is too short
-	if not opts.force and self.fugitive_height < self.config.help.min_fugitive_win_height then
+	if not opts.force and self.fugitive_height < self.config.help.fugitive_min_height then
+		if self.config._debug then
+			vim.notify("FugitiveExtHelp:open - window too short")
+		end
 		return
 	end
 
+	if self.config._debug then
+		vim.notify("FugitiveExtHelp:open")
+	end
+
+	-- create help buffer and window
 	self.bufnr = vim.api.nvim_create_buf(false, true)
 	vim.api.nvim_buf_set_text(self.bufnr, 0, 0, 0, 0, self.content)
-
-	---@type integer|nil: floating window id
+	vim.api.nvim_buf_set_option(self.bufnr, "filetype", "fugitive_ext_help")
+	vim.api.nvim_buf_set_option(self.bufnr, "modifiable", false)
+	vim.api.nvim_buf_set_option(self.bufnr, "readonly", true)
 	self.win_id = vim.api.nvim_open_win(self.bufnr, false, {
 		relative = "win",
 		anchor = "NW",
@@ -121,7 +139,7 @@ function FugitiveExtHelp:open(opts)
 		border = { { "─", "WinSeparator" }, { "─", "WinSeparator" }, { "─", "WinSeparator" }, "", "", "", "", "" },
 		row = vim.api.nvim_win_get_height(0) - (#self.content + 1), -- #content + #border_lines
 		col = 0,
-		-- focusable = false,
+		focusable = false,
 		noautocmd = true,
 	})
 
@@ -130,6 +148,7 @@ end
 
 --- Close the help window
 function FugitiveExtHelp:close()
+	local closed = false
 	if self:_is_opened() then
 		vim.api.nvim_win_close(self.win_id, true)
 		vim.api.nvim_buf_delete(self.bufnr, { force = true })
@@ -138,19 +157,32 @@ function FugitiveExtHelp:close()
 		self.fugitive_bufnr = nil
 		self.fugitive_width = nil
 		self.fugitive_height = nil
+		closed = true
+	end
+	if self.config._debug then
+		vim.notify("FugitiveExtHelp:close -- " .. (closed and "closed" or "not closing"))
 	end
 end
 
 --- Refresh the help window
 function FugitiveExtHelp:refresh()
+	-- early return if user turned off the help
 	if not self.on then
-		-- early return if user turned off the help
+		if self.config._debug then
+			vim.notify("FugitiveExtHelp:refresh - early return")
+		end
 		return
 	end
 	if self:_fugitive_resized() then
+		if self.config._debug then
+			vim.notify("FugitiveExtHelp:refresh - resized")
+		end
 		self:close()
 		self:open({ force = false })
 	else
+		if self.config._debug then
+			vim.notify("FugitiveExtHelp:refresh - not resized")
+		end
 		self:open({ force = false })
 	end
 end
@@ -158,12 +190,17 @@ end
 --- Toggle the help window
 function FugitiveExtHelp:toggle()
 	if self:_is_opened() then
+		if self.config._debug then
+			vim.notify("FugitiveExtHelp:toggle - off")
+		end
 		self:close()
-		---@type boolean|nil: Whether the help window is closed
-		vim.g.fugitive_ext_disabled = true
+		self.on = true
 	else
+		if self.config._debug then
+			vim.notify("FugitiveExtHelp:toggle - on")
+		end
 		self:open({ force = true })
-		vim.g.fugitive_ext_disabled = false
+		self.on = false
 	end
 end
 
@@ -184,19 +221,26 @@ function FugitiveExtHelp:_apply_highlight()
 	vim.api.nvim_win_set_option(self.win_id, "scrolloff", num_lines)
 
 	-- apply syntax highlighting
-	local highlights = { 0 }
-	for _, lenghts in pairs(self.section_lens) do
-		table.insert(highlights, lenghts.key + highlights[#highlights])
-		table.insert(highlights, lenghts.desc + highlights[#highlights])
+	local sections = self.config.help.sections
+	local widths = self.section_width
+	local padding = self.config.help.padding
+	local hl_idxs = { padding.line_leader }
+
+	for _, section in ipairs(sections) do
+		local title = section.title
+		table.insert(hl_idxs, widths[title].key + padding.key_desc + hl_idxs[#hl_idxs])
+		table.insert(hl_idxs, widths[title].desc + padding.section + hl_idxs[#hl_idxs])
 	end
+
 	if self.config.help.header then
 		vim.api.nvim_buf_add_highlight(self.bufnr, -1, "FugitiveExtSection", 0, 0, -1)
 	end
-	local starting_line_idx = (self.config.help.header and 1 or 0) + (self.config.help.padding.header and 1 or 0)
-	for i = starting_line_idx, num_lines do
-		for j = 1, #highlights, 2 do
-			vim.api.nvim_buf_add_highlight(self.bufnr, -1, "FugitiveExtKey", i, highlights[j], highlights[j + 1])
-			vim.api.nvim_buf_add_highlight(self.bufnr, -1, "FugitiveExtDesc", i, highlights[j + 1], highlights[j + 2])
+	local start = (self.config.help.header and 1 or 0) + (self.config.help.padding.header and 1 or 0)
+	local end_ = start + num_lines
+	for i = start, end_ do
+		for j = 1, #hl_idxs - 1, 2 do
+			vim.api.nvim_buf_add_highlight(self.bufnr, -1, "FugitiveExtKey", i, hl_idxs[j], hl_idxs[j + 1])
+			vim.api.nvim_buf_add_highlight(self.bufnr, -1, "FugitiveExtDesc", i, hl_idxs[j + 1], hl_idxs[j + 2])
 		end
 	end
 end
