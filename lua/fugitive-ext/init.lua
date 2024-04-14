@@ -15,7 +15,7 @@ function FugitiveExt:new()
 
 	local fugitive_ext = setmetatable({
 		config = config,
-		hint = Hint:new(config),
+		hint = nil,
 	}, self)
 
 	return fugitive_ext
@@ -35,6 +35,7 @@ FugitiveExt.setup = function(self, partial_config)
 
 	---@diagnostic disable-next-line: param-type-mismatch
 	self.config = Config.merge_config(partial_config, self.config)
+    self.hint = Hint:new(self.config)
 
 	if self.config._debug then
 		vim.notify("FugitiveExt Debug Mode Enabled", 3)

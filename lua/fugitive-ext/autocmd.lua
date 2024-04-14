@@ -23,9 +23,9 @@ function Autocmd.setup(fugitive_ext)
 		pattern = "fugitive://*/.git//",
 		callback = function(ev)
 			if config._debug then
-				vim.notify("Autocmd.setup - Open - " .. ev.event, 3)
+				vim.notify("FugitiveExt:Autocmd:Open - " .. ev.event, 3)
 			end
-            vim.keymap.set("n", "?", function() fugitive_ext.hint:toggle() end , { buffer = ev.buf })
+            vim.keymap.set("n", config.hint.toggle_key, function() fugitive_ext.hint:toggle() end , { buffer = ev.buf })
 			fugitive_ext.hint:refresh()
 		end,
 	})
@@ -36,7 +36,7 @@ function Autocmd.setup(fugitive_ext)
 		pattern = "fugitive://*/.git//",
 		callback = function(ev)
 			if config._debug then
-				vim.notify("Autocmd.setup - Close - " .. ev.event, 3)
+				vim.notify("FugitiveExt:Autocmd:Close - " .. ev.event, 3)
 			end
 			fugitive_ext.hint:close()
 		end,
@@ -48,7 +48,7 @@ function Autocmd.setup(fugitive_ext)
 		pattern = { "gitcommit", "gitrebase", "gitignore" },
 		callback = function(ev)
 			if config._debug then
-				vim.notify("Autocmd.setup - Etc" .. ev.event, 3)
+				vim.notify("FugitiveExt:Autocmd:Etc" .. ev.event, 3)
 			end
 			fugitive_ext.hint:close()
 		end,
@@ -60,7 +60,7 @@ function Autocmd.setup(fugitive_ext)
 		pattern = "fugitive",
 		callback = function(ev)
 			if config._debug then
-				vim.notify("Autocmd.setup - UI", 3)
+				vim.notify("FugitiveExt:Autocmd:UI - ", 3)
 			end
 
 			local window = vim.api.nvim_get_current_win()
@@ -68,7 +68,7 @@ function Autocmd.setup(fugitive_ext)
 			vim.api.nvim_win_set_option(window, "relativenumber", config.fugitive.relative_number)
 
 			local ui = require("fugitive-ext.ui")
-			ui.update_fugitive_header(ev.buf, config.fugitive.hint_header, config.fugitive.hint_header_delimiter)
+			ui.update_fugitive_header(ev.buf, config.fugitive.help_header, config.fugitive.help_header_delimiter)
 		end,
 	})
 end

@@ -15,22 +15,24 @@
 ---@field exclude_ignore_add           FugitiveExtAction
 ---@field exclude_ignore_open          FugitiveExtAction
 ---@field discard_confirm              FugitiveExtAction
----@field untracked                    FugitiveExtAction
----@field unstaged                     FugitiveExtAction
----@field staged                       FugitiveExtAction
----@field unpushed                     FugitiveExtAction
----@field unpulled                     FugitiveExtAction
----@field rebasing                     FugitiveExtAction
----@field jump_prev_hunk               FugitiveExtAction
----@field jump_next_hunk               FugitiveExtAction
+---@field goto_untracked               FugitiveExtAction
+---@field goto_unstaged                FugitiveExtAction
+---@field goto_staged                  FugitiveExtAction
+---@field goto_unpushed                FugitiveExtAction
+---@field goto_unpulled                FugitiveExtAction
+---@field goto_rebasing                FugitiveExtAction
+---@field goto_prev_hunk               FugitiveExtAction
+---@field goto_next_hunk               FugitiveExtAction
 ---@field expand_prev_hunk             FugitiveExtAction
 ---@field expand_next_hunk             FugitiveExtAction
+---@field collapse_curr_goto_prev      FugitiveExtAction
+---@field collapse_curr_goto_next      FugitiveExtAction
 ---@field collapse_curr_expand_prev    FugitiveExtAction
 ---@field collapse_curr_expand_next    FugitiveExtAction
----@field prev_section                 FugitiveExtAction
----@field next_section                 FugitiveExtAction
----@field prev_section_end             FugitiveExtAction
----@field next_section_end             FugitiveExtAction
+---@field goto_prev_section            FugitiveExtAction
+---@field goto_next_section            FugitiveExtAction
+---@field goto_prev_section_end        FugitiveExtAction
+---@field goto_next_section_end        FugitiveExtAction
 ---@field commit                       FugitiveExtAction
 ---@field commit_amend                 FugitiveExtAction
 ---@field commit_amend_no_edit         FugitiveExtAction
@@ -44,7 +46,7 @@
 ---@field revert_commit                FugitiveExtAction
 ---@field revert_no_commit             FugitiveExtAction
 ---@field revert_cmdline               FugitiveExtAction
----@field merge                        FugitiveExtAction
+---@field merge_cmdline                FugitiveExtAction
 ---@field commit_amend_confirm         FugitiveExtAction
 ---@field commit_amend_no_edit_confirm FugitiveExtAction
 ---@field commit_reword_confirm        FugitiveExtAction
@@ -125,35 +127,37 @@ end
 
 --- [[ Staging ]]
 
-Actions.stage               = "<Plug>fugitive:s" -- Stage
-Actions.unstage             = "<Plug>fugitive:u" -- Unstage
-Actions.unstage_all         = "<Plug>fugitive:U" -- Unstage all
-Actions.toggle_stage        = "<Plug>fugitive:a" -- Toggle stage/unstage
-Actions.discard             = "<Plug>fugitive:X" -- Discard changes
-Actions.inline_diff         = "<Plug>fugitive:=" -- Inline diff
-Actions.patch               = "<Plug>fugitive:I" -- Patch
-Actions.exclude_ignore_add  = "<Plug>fugitive:gI"
-Actions.exclude_ignore_open = "<Plug>fugitive:gi"
+Actions.stage               = "<Plug>fugitive:s"  -- Stage
+Actions.unstage             = "<Plug>fugitive:u"  -- Unstage
+Actions.unstage_all         = "<Plug>fugitive:U"  -- Unstage all
+Actions.toggle_stage        = "<Plug>fugitive:a"  -- Toggle stage/unstage
+Actions.discard             = "<Plug>fugitive:X"  -- Discard changes
+Actions.inline_diff         = "<Plug>fugitive:="  -- Inline diff
+Actions.patch               = "<Plug>fugitive:I"  -- Patch
+Actions.exclude_ignore_add  = "<Plug>fugitive:gI" -- Open `.git/info/exclude` or `.gitignore` and add current file under the cursor
 Actions.discard_confirm = confirm_action(Actions.discard, "Are you sure to discard changes? (y/n)")
 
 --- [[ Navigation ]]
 
-Actions.untracked                 = "<Plug>fugitive:gu" -- Goto untracked
-Actions.unstaged                  = "<Plug>fugitive:gU" -- Goto unstaged
-Actions.staged                    = "<Plug>fugitive:gs" -- Goto staged
-Actions.unpushed                  = "<Plug>fugitive:gp" -- Goto unpushed
-Actions.unpulled                  = "<Plug>fugitive:gP" -- Goto unpulled
-Actions.rebasing                  = "<Plug>fugitive:gr" -- Goto rebasing
-Actions.jump_prev_hunk            = "("  -- Jump to previous hunk
-Actions.jump_next_hunk            = ")"  -- Jump to next hunk
-Actions.expand_prev_hunk          = "[c" -- Jump and expand previous hunk
-Actions.expand_next_hunk          = "]c" -- Jump and expand next hunk
-Actions.collapse_curr_expand_prev = "[m" -- Collapse current and expand previous
-Actions.collapse_curr_expand_next = "]m" -- Collapse current and expand next
-Actions.prev_section              = "[[" -- Previous section
-Actions.next_section              = "]]" -- Next section
-Actions.prev_section_end          = "[]" -- Previous section end
-Actions.next_section_end          = "][" -- Next section end
+Actions.goto_untracked            = "<Plug>fugitive:gu"                 -- Goto untracked
+Actions.goto_unstaged             = "<Plug>fugitive:gU"                 -- Goto unstaged
+Actions.goto_staged               = "<Plug>fugitive:gs"                 -- Goto staged
+Actions.goto_unpushed             = "<Plug>fugitive:gp"                 -- Goto unpushed
+Actions.goto_unpulled             = "<Plug>fugitive:gP"                 -- Goto unpulled
+Actions.goto_rebasing             = "<Plug>fugitive:gr"                 -- Goto rebasing
+Actions.goto_prev_hunk            = "<Plug>fugitive:("                  -- Jump to previous hunk
+Actions.goto_next_hunk            = "<Plug>fugitive:)"                  -- Jump to next hunk
+Actions.expand_prev_hunk          = "<Plug>fugitive:[c"                 -- Jump and expand previous hunk
+Actions.expand_next_hunk          = "<Plug>fugitive:]c"                 -- Jump and expand next hunk
+Actions.collapse_curr_goto_prev   = "<Plug>fugitive:[m"                 -- Collapse current and goto previous
+Actions.collapse_curr_goto_next   = "<Plug>fugitive:]m"                 -- Collapse current and goto next
+Actions.collapse_curr_expand_prev = "<Plug>fugitive:[m<Plug>fugitive:i" -- Collapse current and expand previous
+Actions.collapse_curr_expand_next = "<Plug>fugitive:]m<Plug>fugitive:i" -- Collapse current and expand next
+Actions.goto_prev_section         = "<Plug>fugitive:[["                 -- Previous section
+Actions.goto_next_section         = "<Plug>fugitive:]]"                 -- Next section
+Actions.goto_prev_section_end     = "<Plug>fugitive:[]"                 -- Previous section end
+Actions.goto_next_section_end     = "<Plug>fugitive:]["                 -- Next section end
+Actions.exclude_ignore_open       = "<Plug>fugitive:gi"                 -- Open `.git/info/exclude` or `.gitignore`
 
 -- [[ Commit ]]
 
@@ -170,7 +174,7 @@ Actions.commit_cmdline       = "<Plug>fugitive:c<space>"  -- :Git commit
 Actions.revert_commit        = "<Plug>fugitive:crc"       -- Revert commit `git revert`
 Actions.revert_no_commit     = "<Plug>fugitive:crn"       -- Revert commit `git revert --no-commit`
 Actions.revert_cmdline       = "<Plug>fugitive:cr<space>" -- :Git revert
-Actions.merge                = "<Plug>fugitive:cm<space>" -- :Git merge
+Actions.merge_cmdline        = "<Plug>fugitive:cm<space>" -- :Git merge
 Actions.commit_amend_confirm         = confirm_action(Actions.commit_amend,         "Are you sure to `commit --amend`? (y/n)")
 Actions.commit_amend_no_edit_confirm = confirm_action(Actions.commit_amend_no_edit, "Are you sure to `commit --amend --no-edit`? (y/n)")
 Actions.commit_reword_confirm        = confirm_action(Actions.commit_reword,        "Are you sure to `commit --amend --only`? (y/n)")

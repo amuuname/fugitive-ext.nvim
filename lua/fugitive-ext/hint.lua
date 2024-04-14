@@ -1,5 +1,4 @@
 ---@class FugitiveExtHint
----@field on boolean indicates whether the user turned on/off the hint
 ---@field content string[] content generated from the `config.hint.sections`
 ---@field section_width SectionWidth max width of key and desc for each section
 ---@field win_id? number hint floating window id
@@ -18,11 +17,10 @@ FugitiveExtHint.__index = FugitiveExtHint
 ---@param config FugitiveExtConfig
 function FugitiveExtHint:new(config)
 	if config._debug then
-		vim.notify("FugitiveExtHint:new")
+		vim.notify("FugitiveExtHint:new", 3)
 	end
-	local data = self:setup(config)
+	local data = self:generate_data(config)
 	return setmetatable({
-		on = config.hint.visibility,
 		content = data.content,
 		section_width = data.section_width,
 		win_id = nil,
@@ -36,9 +34,9 @@ end
 
 ---@param config FugitiveExtConfig
 ---@return { content: string[], section_width: SectionWidth }
-function FugitiveExtHint:setup(config)
+function FugitiveExtHint:generate_data(config)
 	if config._debug then
-		vim.notify("FugitiveExtHint:setup")
+		vim.notify("FugitiveExtHint:generate_data", 3)
 	end
 	local align_str = require("plenary.strings").align_str
 
@@ -62,16 +60,17 @@ function FugitiveExtHint:setup(config)
 	---@type string[]
 	local content = {}
 
-	local header = align_str("", padding.line_leader, false)
-	for _, section in ipairs(sections) do
-		local len = section_width[section.title].key
-			+ padding.key_desc
-			+ section_width[section.title].desc
-			+ padding.section
-		header = header .. align_str(section.title, len, false)
+	if config.hint.title then
+		local header = align_str("", padding.line_leader, false)
+		for _, section in ipairs(sections) do
+			local len = section_width[section.title].key
+				+ padding.key_desc
+				+ section_width[section.title].desc
+				+ padding.section
+			header = header .. align_str(section.title, len, false)
+		end
+		table.insert(content, header)
 	end
-	table.insert(content, header)
-
 	if padding.header then
 		table.insert(content, "")
 	end
@@ -167,7 +166,7 @@ end
 --- Refresh the hint
 function FugitiveExtHint:refresh()
 	-- early return if user turned off the hint
-	if not self.on then
+	if not self.config.hint.visibility then
 		if self.config._debug then
 			vim.notify("FugitiveExtHint:refresh - early return")
 		end
@@ -194,13 +193,13 @@ function FugitiveExtHint:toggle()
 			vim.notify("FugitiveExtHint:toggle - off")
 		end
 		self:close()
-		self.on = false
+		self.config.hint.visibility = false
 	else
 		if self.config._debug then
 			vim.notify("FugitiveExtHint:toggle - on")
 		end
 		self:open({ force = true })
-		self.on = true
+		self.config.hint.visibility= true
 	end
 end
 
@@ -213,9 +212,9 @@ end
 --- Apply syntax highlighting to the hint
 function FugitiveExtHint:_apply_highlight()
 	local num_lines = #self.content
+        - (self.config.hint.title and 1 or 0)
 		- (self.config.hint.padding.header and 1 or 0)
 		- (self.config.hint.padding.footer and 1 or 0)
-		- (self.config.hint.separator and 1 or 0)
 
 	-- prevent cursor from going below the hint
 	vim.api.nvim_win_set_option(self.win_id, "scrolloff", num_lines)
@@ -232,10 +231,10 @@ function FugitiveExtHint:_apply_highlight()
 		table.insert(hl_idxs, widths[title].desc + padding.section + hl_idxs[#hl_idxs])
 	end
 
-	if self.config.hint.header then
+	if self.config.hint.title then
 		vim.api.nvim_buf_add_highlight(self.bufnr, -1, "FugitiveExtSection", 0, 0, -1)
 	end
-	local start = (self.config.hint.header and 1 or 0) + (self.config.hint.padding.header and 1 or 0)
+	local start = (self.config.hint.title and 1 or 0) + (self.config.hint.padding.header and 1 or 0)
 	local end_ = start + num_lines
 	for i = start, end_ do
 		for j = 1, #hl_idxs - 1, 2 do
