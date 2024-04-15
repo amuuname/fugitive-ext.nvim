@@ -58,8 +58,8 @@ Re-exported git actions from [fugitive](https://github.com/tpope/vim-fugitive) p
 | exclude_ignore_open          | `[count]gi`                                  |
 | jump_prev_hunk               | `(`                                          |
 | jump_next_hunk               | `)`                                          |
-| expand_prev_hunk             | `[c`, `i`                                    |
-| expand_next_hunk             | `]c`                                         |
+| expand_prev_hunk             | `[c`                                         |
+| expand_next_hunk             | `]c`, `i`                                    |
 | collapse_curr_goto_prev      | `[/`, `[m`                                   |
 | collapse_curr_goto_next      | `]/`, `]m`                                   |
 | collapse_curr_expand_prev    | Combination of `[m` and `i`                  |

@@ -110,7 +110,7 @@ local function feed_escaped_keys(keys)
 end
 
 --- Strip whitespace
-local function strip_whitespace(input)
+local function trim(input)
     return input and string.match(input, "^%s*(.-)%s*$")
 end
 
@@ -118,7 +118,7 @@ end
 local function confirm_action(action, prompt)
     return function()
         vim.ui.input({ prompt = prompt }, function(input)
-            if strip_whitespace(input) == "y" then
+            if trim(input) == "y" then
                 feed_escaped_keys(action)
             end
         end)
