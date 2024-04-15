@@ -3,7 +3,6 @@
 ---@field section_width SectionWidth max width of key and desc for each section
 ---@field win_id? number hint floating window id
 ---@field bufnr? number hint buffer number
----@field fugitive_bufnr? number fugitive buffer number
 ---@field fugitive_width? number fugitive window width
 ---@field fugitive_height? number fugitive window height
 ---@field config FugitiveExtConfig
@@ -25,7 +24,6 @@ function FugitiveExtHint:new(config)
 		section_width = data.section_width,
 		win_id = nil,
 		bufnr = nil,
-		fugitive_bufnr = nil,
 		fugitive_width = nil,
 		fugitive_height = nil,
 		config = config,
@@ -105,11 +103,9 @@ function FugitiveExtHint:open(opts)
 		end
 		return
 	end
-	-- self:close() -- ???
 
 	self.fugitive_width = vim.api.nvim_win_get_width(0)
 	self.fugitive_height = vim.api.nvim_win_get_height(0)
-	self.fugitive_bufnr = vim.api.nvim_win_get_buf(0)
 
 	-- early return if the fugitive window is too short
 	if not opts.force and self.fugitive_height < self.config.hint.fugitive_min_height then
@@ -153,9 +149,9 @@ function FugitiveExtHint:close()
 		vim.api.nvim_buf_delete(self.bufnr, { force = true })
 		self.win_id = nil
 		self.bufnr = nil
-		self.fugitive_bufnr = nil
 		self.fugitive_width = nil
 		self.fugitive_height = nil
+        vim.opt_local.scrolloff = -1
 		closed = true
 	end
 	if self.config._debug then
@@ -199,7 +195,7 @@ function FugitiveExtHint:toggle()
 			vim.notify("FugitiveExtHint:toggle - on")
 		end
 		self:open({ force = true })
-		self.config.hint.visibility= true
+		self.config.hint.visibility = true
 	end
 end
 
@@ -212,12 +208,12 @@ end
 --- Apply syntax highlighting to the hint
 function FugitiveExtHint:_apply_highlight()
 	local num_lines = #self.content
-        - (self.config.hint.title and 1 or 0)
+		- (self.config.hint.title and 1 or 0)
 		- (self.config.hint.padding.header and 1 or 0)
 		- (self.config.hint.padding.footer and 1 or 0)
 
 	-- prevent cursor from going below the hint
-	vim.api.nvim_win_set_option(self.win_id, "scrolloff", num_lines)
+	vim.api.nvim_win_set_option(vim.api.nvim_get_current_win(), "scrolloff", #self.content + 1)
 
 	-- apply syntax highlighting
 	local sections = self.config.hint.sections
@@ -226,9 +222,8 @@ function FugitiveExtHint:_apply_highlight()
 	local hl_idxs = { padding.line_leader }
 
 	for _, section in ipairs(sections) do
-		local title = section.title
-		table.insert(hl_idxs, widths[title].key + padding.key_desc + hl_idxs[#hl_idxs])
-		table.insert(hl_idxs, widths[title].desc + padding.section + hl_idxs[#hl_idxs])
+		table.insert(hl_idxs, widths[section.title].key + padding.key_desc + hl_idxs[#hl_idxs])
+		table.insert(hl_idxs, widths[section.title].desc + padding.section + hl_idxs[#hl_idxs])
 	end
 
 	if self.config.hint.title then
