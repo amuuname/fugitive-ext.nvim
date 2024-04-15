@@ -20,12 +20,6 @@ using [Lazy.nvim](https://github.com/folke/lazy.nvim),
 }
 ```
 
-## **Hint** floating window
-
-Used to display customizable keymap hints at the bottom of fugitive as a float. Toggle
-the **hint** by pressing `?` in fugitive.
-
-
 ## Actions
 
 Re-exported git actions from [fugitive](https://github.com/tpope/vim-fugitive) plus some extras.
@@ -37,7 +31,7 @@ Re-exported git actions from [fugitive](https://github.com/tpope/vim-fugitive) p
 - Actions end with `_confirm` simply asks for confirmation before invoking the git command
     provided by fugitive
 
-#### Staging/Unstaging
+### Staging/Unstaging
 
 | Action                       | Fugitive Keymap / Description                |
 | ---                          | ---                                          |
@@ -75,7 +69,7 @@ Re-exported git actions from [fugitive](https://github.com/tpope/vim-fugitive) p
 | prev_section_end             | `[]`                                         |
 | next_section_end             | `][`                                         |
 
-#### Commit
+### Commit
 
 | Action                       | Fugitive Keymap / Description                |
 | ---                          | ---                                          |
@@ -104,7 +98,7 @@ Re-exported git actions from [fugitive](https://github.com/tpope/vim-fugitive) p
 | revert_commit_confirm        | Confirm to `revert_commit`                   |
 | revert_no_commit_confirm     | Confirm to `revert_no_commit`                |
 
-#### Checkout/Branch
+### Checkout/Branch
 
 | Action                       | Fugitive Keymap / Description                |
 | ---                          | ---                                          |
@@ -113,7 +107,7 @@ Re-exported git actions from [fugitive](https://github.com/tpope/vim-fugitive) p
 | branch_cmdline               | `cb<space>`                                  |
 | checkout_confirm             |                                              |
 
-#### Stash
+### Stash
 
 | Action                       | Fugitive Keymap / Description                |
 | ---                          | ---                                          |
@@ -131,7 +125,7 @@ Re-exported git actions from [fugitive](https://github.com/tpope/vim-fugitive) p
 | stash_pop_idx_confirm        | Confirm to `stash_pop_idx`                   |
 | stash_apply_idx_confirm      | Confirm to `stash_apply_idx`                 |
 
-#### Rebase
+### Rebase
 
 | Action                       | Fugitive Keymap / Description                |
 | ---                          | ---                                          |
@@ -159,7 +153,7 @@ Re-exported git actions from [fugitive](https://github.com/tpope/vim-fugitive) p
 | rebase_mark_edit_confirm     | Confirm to `rebase_mark_edit`                |
 | rebase_mark_drop_confirm     | Confirm to `rebase_mark_drop`                |
 
-#### Miscellaneous
+### Miscellaneous
 
 | Action                       | Fugitive Keymap / Description                |
 | ---                          | ---                                          |
