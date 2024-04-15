@@ -106,23 +106,23 @@ local Actions = {}
 --- Feed escaped keys
 ---@param keys string
 local function feed_escaped_keys(keys)
-	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(keys, true, true, true), "n", true)
+    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(keys, true, true, true), "n", true)
 end
 
 --- Strip whitespace
 local function strip_whitespace(input)
-	return input and string.match(input, "^%s*(.-)%s*$")
+    return input and string.match(input, "^%s*(.-)%s*$")
 end
 
 --- Conform before performing action
 local function confirm_action(action, prompt)
-	return function()
-		vim.ui.input({ prompt = prompt }, function(input)
-			if strip_whitespace(input) == "y" then
-				feed_escaped_keys(action)
-			end
-		end)
-	end
+    return function()
+        vim.ui.input({ prompt = prompt }, function(input)
+            if strip_whitespace(input) == "y" then
+                feed_escaped_keys(action)
+            end
+        end)
+    end
 end
 
 --- [[ Staging ]]
@@ -238,12 +238,12 @@ Actions.rebase_mark_drop_confirm   = confirm_action(Actions.rebase_mark_drop,   
 --- [[ Push/Pull ]]
 
 Actions.push_cmdline = function() --- Push cmdline
-	local keys = ":Git push "
-	feed_escaped_keys(keys)
+    local keys = ":Git push "
+    feed_escaped_keys(keys)
 end
 Actions.pull_cmdline = function() --- Pull cmdline
-	local keys = ":Git pull "
-	feed_escaped_keys(keys)
+    local keys = ":Git pull "
+    feed_escaped_keys(keys)
 end
 
 --- [[ Misc ]]
