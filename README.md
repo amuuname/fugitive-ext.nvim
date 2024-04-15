@@ -1,6 +1,6 @@
 # Fugitive-Ext.nvim
 
-Wrapper around the famous Git wrapper [fugitive](https://github.com/tpope/vim-fugitive).
+A wrapper around the popular Git wrapper [vim-fugitive](https://github.com/tpope/vim-fugitive).
 
 ![fugitive-ext](fugitive-ext.png)
 
@@ -22,14 +22,14 @@ using [Lazy.nvim](https://github.com/folke/lazy.nvim),
 
 ## Actions
 
-Re-exported git actions from [fugitive](https://github.com/tpope/vim-fugitive) plus some extras.
+Re-exported git actions from [fugitive](https://github.com/tpope/vim-fugitive), along with some additional actions.
 
 <details>
 <summary>List of actions</summary>
 
-- Consult with fugitive help doc for detailed explanation of keymap (`h: fugitive_s`).
-- Actions end with `_confirm` simply asks for confirmation before invoking the git command
-    provided by fugitive
+- Consult with fugitive help documentation for detailed explanations of each keymaps (`h: fugitive_s`).
+- Actions ending with `_confirm` will prompt for confirmation before invoking the Git
+command provided by fugitive.
 
 ### Staging/Unstaging
 
