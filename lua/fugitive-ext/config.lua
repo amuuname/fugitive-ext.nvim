@@ -16,12 +16,12 @@ local Config = {}
 ---@field title boolean                                      --  Display hint section title
 ---@field fugitive_min_height number                         --  Minimum height of fugitive to show hint
 ---@field sections HintSection[]                             --  Entries to display in the hint
----@field padding Padding                                    --  Padding settings
+---@field padding PaddingConfig                              --  Padding settings
 
 ---@alias HintSection { title: string, entries: HintItem[] } --  Section title and entries
 ---@alias HintItem string[]                                  --  [ Keymap, description ] tuple
 
----@class Padding
+---@class PaddingConfig
 ---@field header boolean                                     --  Empty line after header
 ---@field footer boolean                                     --  Empty line as a footer
 ---@field line_leader number                                 --  Number of spaces to pad the beginning of each line
@@ -29,16 +29,30 @@ local Config = {}
 ---@field section number                                     --  Number of spaces between sections
 
 ---@class FugitiveExtPartialConfig
----@field fugitive? FugitiveConfig
----@field hint? FugitiveExtHintConfig
+---@field fugitive? FugitivePartialConfig
+---@field hint? FugitiveExtHintPartialConfig
 ---@field _debug? boolean
 
----@class FugitiveExtPartialHintConfig
----@field visibility? boolean
----@field header? boolean
----@field fugitive_min_height? number
----@field sections? HintSection[]
----@field padding? Padding
+---@class FugitivePartialConfig
+---@field line_number? boolean                               --  show/hide line number in fugitive buffer
+---@field relative_number? boolean                           --  show/hide relative number in fugitive buffer
+---@field help_header? string[][]                            --  list of header and keymap (i.e. { "Help:", "g?" }, { "Hint:", "?" })
+---@field help_header_delimiter? string                      --  Delimiter between hint header and keymap
+
+---@class FugitiveExtHintPartialConfig
+---@field toggle_key? string                                 --  Keymap to toggle hint
+---@field visibility? boolean                                --  Default visibility of hint when opening fugitive
+---@field title? boolean                                     --  Display hint section title
+---@field fugitive_min_height? number                        --  Minimum height of fugitive to show hint
+---@field sections? HintSection[]                            --  Entries to display in the hint
+---@field padding? PaddingPartialConfig                      --  Padding settings
+
+---@class PaddingPartialConfig
+---@field header? boolean                                    --  Empty line after header
+---@field footer? boolean                                    --  Empty? line as a footer
+---@field line_leader? number                                --  Number of spaces to pad the beginning of each line
+---@field key_desc? number                                   --  Number of spaces between key and description
+---@field section? number                                    --  Number of spaces between sections
 
 ---@return FugitiveExtConfig
 function Config.get_default_config()

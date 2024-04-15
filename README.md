@@ -202,7 +202,7 @@ vim.api.nvim_create_autocmd("FileType", {
 Fugitive-Extension comes with following defaults:
 
 ```lua
-{
+require("fugitive-ext"):setup({
     -- Config for fugitive
     fugitive = {
         line_number = false,          -- `vim.wo.number` for fugitive buffer
@@ -293,5 +293,5 @@ Fugitive-Extension comes with following defaults:
             },
         },
     },
-}
+})
 ```
