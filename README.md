@@ -294,4 +294,9 @@ require("fugitive-ext"):setup({
         },
     },
 })
+
+-- highlight
+vim.api.nvim_set_hl(0, "FugitiveExtSection", { fg = "#81A1C1", bold = true })
+vim.api.nvim_set_hl(0, "FugitiveExtKey",     { fg = "#88C0D0", bold = true })
+vim.api.nvim_set_hl(0, "FugitiveExtDesc",    { fg = "#D8DEE9" })
 ```
