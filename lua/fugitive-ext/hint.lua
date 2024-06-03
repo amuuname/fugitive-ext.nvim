@@ -122,9 +122,9 @@ function FugitiveExtHint:open(opts)
     -- create hint buffer and window
     self.bufnr = vim.api.nvim_create_buf(false, true)
     vim.api.nvim_buf_set_text(self.bufnr, 0, 0, 0, 0, self.content)
-    vim.api.nvim_buf_set_option(self.bufnr, "filetype", "fugitive_ext_hint")
-    vim.api.nvim_buf_set_option(self.bufnr, "modifiable", false)
-    vim.api.nvim_buf_set_option(self.bufnr, "readonly", true)
+    vim.api.nvim_set_option_value("filetype", "fugitive_ext_hint", { buf = self.bufnr })
+    vim.api.nvim_set_option_value("modifiable", false, { buf = self.bufnr })
+    vim.api.nvim_set_option_value("readonly", true, { buf = self.bufnr })
     self.win_id = vim.api.nvim_open_win(self.bufnr, false, {
         relative = "win",
         anchor = "NW",
@@ -213,7 +213,8 @@ function FugitiveExtHint:_apply_highlight()
         - (self.config.hint.padding.footer and 1 or 0)
 
     -- prevent cursor from going below the hint
-    vim.api.nvim_win_set_option(vim.api.nvim_get_current_win(), "scrolloff", #self.content + 1)
+    local winnr = vim.api.nvim_get_current_win()
+    vim.api.nvim_set_option_value("scrolloff", #self.content + 1, { win = winnr })
 
     -- apply syntax highlighting
     local sections = self.config.hint.sections
